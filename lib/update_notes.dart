@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 import 'database/db_helper.dart';
 import 'home_page.dart';
@@ -29,22 +30,23 @@ class _UpdateNotesState extends State<UpdateNotes> {
   //add notes to database
   Future  updateNotes(int id) async
   {
-    final newNote = Note(
+    final updatedNote = Note(
       title: titleController.text,
       description: descriptionController.text,
     );
 
-    int check= await dbHelper.update(newNote.toMap(),id);
+    int check= await dbHelper.updateData(updatedNote.toMap(),id);
     print("Check=$check");
     if(check>0)
     {
 
-      Fluttertoast.showToast(msg: "Notes Updated");
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomePage()));
+      Get.snackbar("Updated", "Note Updated",snackPosition: SnackPosition.BOTTOM);
+      Get.offAll(HomePage());
+
     }
     else
     {
-      Fluttertoast.showToast(msg: "Error");
+      Get.snackbar("Error", "Error in note update",snackPosition: SnackPosition.BOTTOM);
     }
 
 
@@ -67,6 +69,9 @@ class _UpdateNotesState extends State<UpdateNotes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(
+          color: Colors.white
+        ),
         backgroundColor: Colors.blue,
         title: Text("Updates Notes",style: TextStyle(
             color: Colors.white

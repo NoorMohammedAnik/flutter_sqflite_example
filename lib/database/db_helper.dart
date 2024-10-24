@@ -1,65 +1,98 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
 
   //database name
-  static final _databaseName = "notes.db";
+  static const databaseName = "notes.db";
   //database version
-  static final _databaseVersion = 1;
+  static const databaseVersion = 1;
   //table name
-  static final table = 'notes';
+  static const tableNotes = 'notes';
   //column names
-  static final columnId = '_id';
-  static final columnTitle = 'title';
-  static final columnDescription = 'description';
+  static const columnId = 'id';
+  static const columnTitle = 'title';
+  static const columnDescription = 'description';
 
-  DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+  //create a single instance of DatabaseHelper
+  DatabaseHelper.privateConstructor();
+  static final DatabaseHelper instance = DatabaseHelper.privateConstructor();
 
-  static Database? _database;
+  static Database? myDb;
 
+
+  //for initializing the database
   Future<Database?> get database async {
-    if (_database != null) return _database;
-    _database = await _initDatabase();
-    return _database;
+    if (myDb != null) return myDb;
+    myDb = await initDatabase();
+    return myDb;
   }
 
-  _initDatabase() async {
-    String path = join(await getDatabasesPath(), _databaseName);
-    return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
+
+  //for initializing the database path
+  initDatabase() async {
+    String path = join(await getDatabasesPath(), databaseName);
+    return await openDatabase(
+        path,
+        version: databaseVersion,
+        onCreate: createTables
+    );
   }
 
-  Future _onCreate(Database db, int version) async {
-    await db.execute('''
-          CREATE TABLE $table (
+
+  //for creating table in database  if not exist already
+  Future createTables(Database db, int version) async {
+
+    await db.execute("""
+          CREATE TABLE $tableNotes (
             $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
             $columnTitle TEXT NOT NULL,
             $columnDescription TEXT NOT NULL
           )
-          ''');
+          """);
+
+
+
+
+
   }
 
-  Future<int> insert(Map<String, dynamic> row) async {
+  //for insert data
+  Future<int> insertData(Map<String, dynamic> row) async {
     Database? db = await instance.database;
-    return await db!.insert(table, row);
+    return await db!.insert(tableNotes, row);
   }
 
-  Future<List<Map<String, dynamic>>> queryAllRows() async {
+  //for read data from database
+  Future<List<Map<String, dynamic>>> getAllData() async {
     Database? db = await instance.database;
 
-    return await db!.query(table, orderBy: "$columnId DESC");
+    return await db!.query(tableNotes, orderBy: "$columnId DESC");
+
+    // Use rawQuery to select all notes
+   // List<Map<String, dynamic>> notes = await db!.rawQuery('SELECT * FROM notes');
+
+    //return notes;
   }
 
-  Future<int> update(Map<String, dynamic> row,int id) async {
+
+  //for update data in database
+  Future<int> updateData(Map<String, dynamic> row,int id) async {
     Database? db = await instance.database;
 
-    return await db!.update(table, row, where: '$columnId = ?', whereArgs: [id]);
+    return await db!
+        .update(tableNotes, row, where: '$columnId = ?', whereArgs: [id]);
+
+    // await db.rawQuery(
+    //     'SELECT * FROM notes WHERE userId = ?',
+    //     [userId]);
+
   }
 
-  Future<int> delete(int id) async {
+  //for delete data from database
+  Future<int> deleteData(int id) async {
     Database? db = await instance.database;
-    return await db!.delete(table, where: '$columnId = ?', whereArgs: [id]);
+    return await db!
+        .delete(tableNotes, where: '$columnId = ?', whereArgs: [id]);
   }
 }

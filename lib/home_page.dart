@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sqflite_example/add_notes.dart';
 import 'package:flutter_sqflite_example/update_notes.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 import 'database/db_helper.dart';
 import 'model/note.dart';
@@ -28,26 +30,31 @@ class _HomePageState extends State<HomePage> {
     dbHelper = DatabaseHelper.instance;
 
     //load notes on startup
-    _loadNotes();
+    loadAllNotes();
   }
 
 
   //for loading data from db
-  Future _loadNotes() async {
-    final data = await dbHelper.queryAllRows();
+  Future loadAllNotes() async {
+    final data = await dbHelper.getAllData();
     setState(() {
+
+      //This line converts a list of map entries (database records) into a list of Note objects using the Note.fromMap method, making it easier to work with custom objects in your app.
+      //each element is a map, represented by e
       notes = data.map((e) => Note.fromMap(e)).toList();
+
+
     });
   }
 
 
 
   //for deleting a note
-  Future _deleteNote(int id) async {
-    int check= await dbHelper.delete(id);
+  Future deleteNote(int id) async {
+    int check= await dbHelper.deleteData(id);
     if(check>0){
       Fluttertoast.showToast(msg: "Note deleted successfully");
-      _loadNotes();
+      loadAllNotes();
     }
     else
       {
@@ -68,11 +75,11 @@ class _HomePageState extends State<HomePage> {
         ),),
       ),
       body: notes.isEmpty
-          ? const Center(child: Text("No notes yet!"))
+          ? const Center(child: Text("No notes available!"))
           : ListView.builder(
         itemCount: notes.length,
         itemBuilder: (context, index) {
-          final note = notes[index];
+          Note note = notes[index];
           return Padding(
             padding: const EdgeInsets.all(10.0),
             child: ListTile(
@@ -85,10 +92,10 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateNotes(notes: note)));
               },  // for clickable list item
-              title: Text(note.title,style: TextStyle(
+              title: Text(note.title!,style: TextStyle(
                 fontWeight: FontWeight.bold
               ),),
-              subtitle: Text(note.description),
+              subtitle: Text(note.description!),
               leading: const Icon(
                 Icons.note_alt_outlined,
                 size: 40,
@@ -114,8 +121,8 @@ class _HomePageState extends State<HomePage> {
                     btnCancelText: 'NO',
                     btnOkOnPress: () {
 
-                      _deleteNote(note.id!);
-                      Navigator.of(context).pop();
+                      deleteNote(note.id!);
+                      Get.back();
 
                     },
                   ).show();
@@ -133,7 +140,7 @@ class _HomePageState extends State<HomePage> {
         tooltip: "Add Note",
         mini: false,
         onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>AddNotes()));
+          Get.to(AddNotes());
         },
         child: const Icon(Icons.add,
         color: Colors.white,),
