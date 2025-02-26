@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 class DatabaseHelper {
 
   //database name
-  static const databaseName = "notes.db";
+  static const databaseName = "note.db";
   //database version
   static const databaseVersion = 1;
   //table name
@@ -48,9 +48,9 @@ class DatabaseHelper {
             $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
             $columnTitle TEXT NOT NULL,
             $columnDescription TEXT NOT NULL
+            
           )
           """);
-
 
 
 
